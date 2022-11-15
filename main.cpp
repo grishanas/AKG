@@ -7,10 +7,12 @@
 
 #include "model.h"
 #include "main.h"
+#include "Camera.h"
 #include "Lab_part_2.h"
 
 
 Model *model1 = NULL;
+Camera* cam = NULL;
 //Model *model2 = NULL;
 const int width  = 800;
 const int height = 800;
@@ -34,13 +36,14 @@ int main(int argc, char** argv) {
         model1 = new Model(argv[1]);
     }
     else {
-        model1 = new Model("obj/model.obj");
-        //model1 = new Model("obj/nigga.obj");
+        //model1 = new Model("obj/model.obj");
+        model1 = new Model("obj/nigga.obj");
     }
 
 
     RenderWindow window(VideoMode(width, height), "Renderer", sf::Style::Close);
 
+     cam = new Camera();
 
     window.setFramerateLimit(60);
 
@@ -50,6 +53,8 @@ int main(int argc, char** argv) {
     sf::Clock clock;
     sf::Clock fps;
     sf::Vector2f mousePosPrev;
+
+    const float cameraSpeed = 0.05f;
 
     while (window.isOpen()) {
 
@@ -64,16 +69,20 @@ int main(int argc, char** argv) {
                 switch (event.key.code)
                 {
                 case Keyboard::W:
-                    model1->traslate(sf::Vector3f(0, 0.01, 0));
+                    //model1->traslate(sf::Vector3f(0, 0.01, 0));
+                    cam->ChangeAngle(sf::Vector2f(0, 0.01));
                     break;
                 case Keyboard::A:
-                    model1->traslate(sf::Vector3f(-0.01, 0, 0));
+                    //model1->traslate(sf::Vector3f(-0.01, 0, 0));
+                    cam->ChangeAngle(sf::Vector2f(-0.01, 0));
                     break;
                 case Keyboard::S:
-                    model1->traslate(sf::Vector3f(0, -0.01, 0));
+                    //model1->traslate(sf::Vector3f(0, -0.01, 0));
+                    cam->ChangeAngle(sf::Vector2f(0, -0.01));
                     break;
                 case Keyboard::D:
-                    model1->traslate(sf::Vector3f(0.01, 0, 0));
+                    //model1->traslate(sf::Vector3f(0.01, 0, 0));
+                    cam->ChangeAngle(sf::Vector2f(0.01, 0));
                     break;
                 default:
                     break;
@@ -97,8 +106,8 @@ int main(int argc, char** argv) {
             }
             if (event.type == Event::MouseWheelScrolled)
             {
-                model1->scale(sf::Vector3f(1 * pow(1.02, event.mouseWheelScroll.delta), 1 * pow(1.02, event.mouseWheelScroll.delta), 1 * pow(1.02, event.mouseWheelScroll.delta)));
-
+                //model1->scale(sf::Vector3f(1 * pow(1.02, event.mouseWheelScroll.delta), 1 * pow(1.02, event.mouseWheelScroll.delta), 1 * pow(1.02, event.mouseWheelScroll.delta)));
+                cam->ChangeRadius(event.mouseWheelScroll.delta * 0.5f);
             }
         }
 
@@ -106,7 +115,6 @@ int main(int argc, char** argv) {
 
         memset(pixarray, 0, width * height * sizeof(pix));
         loadbitmap(model1);
-        //loadbitmap(model2);
         displaybitmap();
 
         window.clear();
@@ -133,6 +141,7 @@ void loadbitmap(Model *model) {
         Vec3i screen_coords[3];
         Vec3f world_coords[3];
         for (int j=0; j<3; j++) {
+            
             Vec3f v0 = model->vert(face[j]);
             screen_coords[j] = Vec3i(((v0.x + 1.) * width / 2.),((v0.y + 1.) * height / 2.),((v0.z+1)* depth/2));
             world_coords[j] = v0;
@@ -143,13 +152,13 @@ void loadbitmap(Model *model) {
             int y1 = (v1.y+1.)*height/2.;
             line(x0, y0, x1, y1, 0xFFFFFFFF);
         }
-        Thriangle(screen_coords);
+        //Thriangle(screen_coords);
         
            
         
     }
 
-    ZBuffering(model, *pixarray);
+    //ZBuffering(model, *pixarray);
     return;
 }
 
