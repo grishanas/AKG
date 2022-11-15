@@ -4,6 +4,7 @@
 #include "geometry.h"
 #include <SFML/System/Vector3.hpp>
 #include <SFML/System/Vector2.hpp>
+#include "model.h"
 
 class Camera 
 {
@@ -16,12 +17,14 @@ class Camera
 		sf::Vector3f _CameraRight;
 		sf::Vector3f _CameraUp;
 
+
 		void _ChangeCameraView();
-		sf::Vector3f Normilize(sf::Vector3f NonNormVector);
+		
 	public:
 
 		Camera();
 		~Camera();
+		void Render(Model *model);
 		void ChangePosition(sf::Vector3f ChangePosition);
 
 

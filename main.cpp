@@ -7,6 +7,7 @@
 
 #include "model.h"
 #include "main.h"
+#include "Camera.h"
 #include "Lab_part_2.h"
 
 
@@ -34,13 +35,14 @@ int main(int argc, char** argv) {
         model1 = new Model(argv[1]);
     }
     else {
-        model1 = new Model("obj/model.obj");
-        //model1 = new Model("obj/nigga.obj");
+        //model1 = new Model("obj/model.obj");
+        model1 = new Model("obj/nigga.obj");
     }
 
 
     RenderWindow window(VideoMode(width, height), "Renderer", sf::Style::Close);
 
+    Camera *cam = new Camera();
 
     window.setFramerateLimit(60);
 
@@ -50,6 +52,8 @@ int main(int argc, char** argv) {
     sf::Clock clock;
     sf::Clock fps;
     sf::Vector2f mousePosPrev;
+
+    const float cameraSpeed = 0.05f;
 
     while (window.isOpen()) {
 
@@ -64,16 +68,20 @@ int main(int argc, char** argv) {
                 switch (event.key.code)
                 {
                 case Keyboard::W:
-                    model1->traslate(sf::Vector3f(0, 0.01, 0));
+                    //model1->traslate(sf::Vector3f(0, 0.01, 0));
+                    cam->ChangePosition(sf::Vector3f(0, 0.01, 0));
                     break;
                 case Keyboard::A:
-                    model1->traslate(sf::Vector3f(-0.01, 0, 0));
+                    //model1->traslate(sf::Vector3f(-0.01, 0, 0));
+                    cam->ChangePosition(sf::Vector3f(-0.01, 0, 0));
                     break;
                 case Keyboard::S:
-                    model1->traslate(sf::Vector3f(0, -0.01, 0));
+                    //model1->traslate(sf::Vector3f(0, -0.01, 0));
+                    cam->ChangePosition(sf::Vector3f(0, -0.01, 0));
                     break;
                 case Keyboard::D:
-                    model1->traslate(sf::Vector3f(0.01, 0, 0));
+                    //model1->traslate(sf::Vector3f(0.01, 0, 0));
+                    cam->ChangePosition(sf::Vector3f(0.01, 0, 0));
                     break;
                 default:
                     break;
@@ -106,7 +114,6 @@ int main(int argc, char** argv) {
 
         memset(pixarray, 0, width * height * sizeof(pix));
         loadbitmap(model1);
-        //loadbitmap(model2);
         displaybitmap();
 
         window.clear();
@@ -143,13 +150,13 @@ void loadbitmap(Model *model) {
             int y1 = (v1.y+1.)*height/2.;
             line(x0, y0, x1, y1, 0xFFFFFFFF);
         }
-        Thriangle(screen_coords);
+        //Thriangle(screen_coords);
         
            
         
     }
 
-    ZBuffering(model, *pixarray);
+    //ZBuffering(model, *pixarray);
     return;
 }
 
