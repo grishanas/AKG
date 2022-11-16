@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
 
     while (window.isOpen()) {
 
-        std::cout << fps.restart().asMilliseconds() << endl;
+        //std::cout << fps.restart().asMilliseconds() << endl;
         Event event;
         while (window.pollEvent(event)) {
 
@@ -70,19 +70,19 @@ int main(int argc, char** argv) {
                 {
                 case Keyboard::W:
                     //model1->traslate(sf::Vector3f(0, 0.01, 0));
-                    cam->ChangeAngle(sf::Vector2f(0, 0.01));
+                    cam->ChangeAngle(sf::Vector2f(0, 0.05));
                     break;
                 case Keyboard::A:
                     //model1->traslate(sf::Vector3f(-0.01, 0, 0));
-                    cam->ChangeAngle(sf::Vector2f(-0.01, 0));
+                    cam->ChangeAngle(sf::Vector2f(-0.05, 0));
                     break;
                 case Keyboard::S:
                     //model1->traslate(sf::Vector3f(0, -0.01, 0));
-                    cam->ChangeAngle(sf::Vector2f(0, -0.01));
+                    cam->ChangeAngle(sf::Vector2f(0, -0.05));
                     break;
                 case Keyboard::D:
                     //model1->traslate(sf::Vector3f(0.01, 0, 0));
-                    cam->ChangeAngle(sf::Vector2f(0.01, 0));
+                    cam->ChangeAngle(sf::Vector2f(0.05, 0));
                     break;
                 default:
                     break;
@@ -140,17 +140,22 @@ void loadbitmap(Model *model) {
         std::vector<int> face = model->face(i);
         Vec3i screen_coords[3];
         Vec3f world_coords[3];
+        sf::Vector3i firstPointp;
+        sf::Vector3i secondPointp;
         for (int j=0; j<3; j++) {
             
-            Vec3f v0 = model->vert(face[j]);
-            screen_coords[j] = Vec3i(((v0.x + 1.) * width / 2.),((v0.y + 1.) * height / 2.),((v0.z+1)* depth/2));
-            world_coords[j] = v0;
-            Vec3f v1 = model->vert(face[(j+1)%3]);
-            int x0 = (v0.x+1.)*width/2.;
-            int y0 = (v0.y+1.)*height/2.;
+            sf::Vector3f v0 = sf::Vector3f(model->vert(face[j]).x, model->vert(face[j]).y, model->vert(face[j]).z);
+            sf::Vector3f v1 = sf::Vector3f(model->vert(face[(j+1)%3]).x, model->vert(face[(j + 1) % 3]).y, model->vert(face[(j + 1) % 3]).z);
+            //screen_coords[j] = Vec3i(((v0.x + 1.) * width / 2.),((v0.y + 1.) * height / 2.),((v0.z+1)* depth/2));
+            //world_coords[j] = v0;
+            firstPointp = cam->Render(v0);
+            secondPointp = cam->Render(v1);
+            //Vec3f v1 = model->vert(face[(j+1)%3]);
+            /*int x0 = (firstPointp.x + 1.) * width / 2.;
+            int y0 = (firstPointp.y+1.)*height/2.;
             int x1 = (v1.x+1.)*width/2.;
-            int y1 = (v1.y+1.)*height/2.;
-            line(x0, y0, x1, y1, 0xFFFFFFFF);
+            int y1 = (v1.y+1.)*height/2.;*/
+            line(firstPointp.x, firstPointp.y, secondPointp.x, secondPointp.y, 0xFFFFFFFF);
         }
         //Thriangle(screen_coords);
         
