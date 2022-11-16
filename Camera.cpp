@@ -3,7 +3,6 @@
 #include <math.h>
 
 
-
 void  Camera::ChangeAngle(sf::Vector2f angles) {
 
 	this->_angles += angles;
@@ -31,10 +30,10 @@ void Camera::SetDecart()
 {
 	this->_decartCoords = _SphereToDecart();
 	this->_ChangeCameraView();
-
 }
 
 Camera::Camera() {
+
 }
 
 Camera::~Camera() {
@@ -75,9 +74,29 @@ void Camera::Render(Model* model)
 			//tmp.y = vec.y * this->_rotation.x+ vec.y * this->_Rotation.y+ vec.y * this->_Rotation.z;
 			//tmp.z = vec.z * this->_rotation.x+ vec.z * this->_rotation.y+ vec.z * this->_Rotation.z;
 		}
+		this->_direction = Normilize(this->_decartCoords - this->_Target);
+		sf::Vector3f tmp = Cross(sf::Vector3f(.0f, 1.f, .0f), this->_direction);
+		this->_cameraRight = Normilize(tmp);
+		this->_cameraUp = Normilize(Cross(this->_direction, this->_CameraRight));
+	}
+
+}
+
+void Camera::Render(Model* model)
+{
+	for (int i = 0; i < model->nverts(); i++)
+	{
+		auto vec = model->vert(i);
+		sf::Vector3f tmp;
+
+		for (int k = 0; k < 3; k++)
+		{
+			tmp.x = vec.x * this->_Rotation.x+ vec.x * this->_Rotation.y+ vec.x * this->_Rotation.z;
+			tmp.y = vec.y * this->_Rotation.x+ vec.y * this->_Rotation.y+ vec.y * this->_Rotation.z;
+			tmp.z = vec.z * this->_Rotation.x+ vec.z * this->_Rotation.y+ vec.z * this->_Rotation.z;
+		}
 	}
 }
- 
 //sf::Vector3f Camera::Rende(sf::Vector3f a)
 //{
 //
