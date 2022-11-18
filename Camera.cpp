@@ -78,6 +78,8 @@ float DotProduct(sf::Vector3f a, sf::Vector3f b)
 }
 
 sf::Vector3f Camera::_CameraView(sf::Vector3f point)
+
+void Camera::Render(Model* model)
 {
 	sf::Vector3f newPoint;
 	newPoint.x = point.x * this->_cameraRight.x + point.y * this->_cameraRight.y + point.z * this->_cameraRight.z- DotProduct(this->_cameraRight, this->_decartCoords);
@@ -93,8 +95,6 @@ sf::Vector3f Camera::MatrixProjection(sf::Vector3f point)
 	newPoint.y = point.y * 2 / this->Parametr.height;
 	newPoint.z = point.z / (this->Parametr.z_near-this->Parametr.z_far) + point.z *this->Parametr.z_near/(this->Parametr.z_near-this->Parametr.z_far);
 	return newPoint;
-}
-
 sf::Vector3f  Camera::MatrixPerspective(sf::Vector3f point)
 {
 	sf::Vector3f newPoint;
@@ -105,7 +105,7 @@ sf::Vector3f  Camera::MatrixPerspective(sf::Vector3f point)
 	newPoint.z = (point.z*(this->Parametr.z_far + this->Parametr.z_near*this->Parametr.z_far)/ (this->Parametr.z_near - this->Parametr.z_far) )/w;
 	return newPoint;
 }
-
+		auto vec = model->vert(i);
 sf::Vector3f Camera::MatrixviewPort(sf::Vector3f point)
 {
 	sf::Vector3f newPoint;
@@ -114,7 +114,7 @@ sf::Vector3f Camera::MatrixviewPort(sf::Vector3f point)
 	newPoint.y = point.y * ( - this->Parametr.height / 2 - this->Parametr.height / 2);
 	newPoint.z = point.z;
 	return newPoint;
-}
+		}
 
 sf::Vector3i Camera::Render(sf::Vector3f point)
 {
@@ -129,10 +129,12 @@ sf::Vector3i Camera::Render(sf::Vector3f point)
 	sf::Vector3i newPoint = sf::Vector3i((temp.x+1.f)*this->Parametr.width/2, (temp.y+1.f) * this->Parametr.height / 2, temp.z);
 	return newPoint;
 }
+//
+//}
 
 void Camera::_SphereToDecart()
 {
-	this->_decartCoords.x = this->_radius * sin(_angles.y) * cos(_angles.x);
-	this->_decartCoords.y = this->_radius * sin(_angles.y) * sin(_angles.x);
-	this->_decartCoords.z = this->_radius * cos(_angles.y);
+	this->_decartCoords.x = this->_radius * sin(1-_angles.y) * cos(_angles.x);
+	this->_decartCoords.y = this->_radius * sin(1-_angles.y) * sin(_angles.x);
+	this->_decartCoords.z = this->_radius * cos(1-_angles.y);
 }
