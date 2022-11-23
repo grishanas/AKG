@@ -20,6 +20,7 @@ class Camera
 		sf::Vector3f _decartCoords;
 		/*sf::Vector3f _Rotation;
 		sf::Vector3f _Target;*/
+		float _collider;
 
 		sf::Vector2f _angles;
 		float _radius;
@@ -34,10 +35,9 @@ class Camera
 		void _SphereToDecart();
 		
 	public:
-		void SetFar(double value) { Parametr.z_far = value; };
-		void SetNear(double value) { Parametr.z_near = value; };
-		double GetFar() {return  Parametr.z_far; };
-		double GetNear(){return Parametr.z_near; };
+		void SetFar(double value) { };//Parametr.z_far = value+200.f; };
+		void SetNear(double value) { };//Parametr.z_near = value+0.5f; };
+		//void SetCollaider(float value) { if (_collider == 0) { _radius = this->_decartCoords.z - value; _collider = _radius + _radius / 2; this->SetDecart(); } else _collider = value; };
 		Camera();
 		~Camera();
 		void Render(Model *model);
