@@ -9,10 +9,12 @@
 #include "main.h"
 #include "Camera.h"
 #include "Lab_part_2.h"
+#include "Matrix.h"
 
 
-Model *model1 = NULL;
+Model* model1 = NULL;
 Camera* cam = NULL;
+sf::Vector3f lightPos = { 1000.f, 1000.f, 0.f };
 //Model *model2 = NULL;
 
 
@@ -28,7 +30,7 @@ void line(sf::Vector3f firstPont, sf::Vector3f secondPoint, Uint32 color);
 void line(int x0, int y0, int x1, int y1, Uint32 color);
 void loadbitmap(Model* model);
 void displaybitmap();
-void Thriangle(sf::Vector3f screen_coords[3]);
+void Thriangle(sf::Vector3f screen_coords[3], float colorPercent);
 void ZBuffering(sf::Vector3i screen_coords[3]);
 
 int main(int argc, char** argv) {
@@ -110,7 +112,7 @@ int main(int argc, char** argv) {
             if (event.type == Event::MouseWheelScrolled)
             {
                 //model1->scale(sf::Vector3f(1 * pow(1.02, event.mouseWheelScroll.delta), 1 * pow(1.02, event.mouseWheelScroll.delta), 1 * pow(1.02, event.mouseWheelScroll.delta)));
-                cam->ChangeRadius(event.mouseWheelScroll.delta * 0.5f);
+                cam->ChangeRadius(event.mouseWheelScroll.delta * 1.5f);
             }
         }
 
@@ -142,20 +144,20 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-void loadbitmap(Model *model) {
+void loadbitmap(Model* model) {
 
     sf::Vector3f pos = cam->getDecartPos();
 
     float min = std::numeric_limits<float>().max();
     float max = std::numeric_limits<float>().min();
 
-    for (auto &vertex : model->getVerteses())
+    for (auto& vertex : model->getVerteses())
     {
-        auto distance =  pow( pow( vertex.x - pos.x ,2) + pow(vertex.y - pos.y, 2) + pow(vertex.z - pos.z, 2) , 0.5 );
+        auto distance = pow(pow(vertex.x - pos.x, 2) + pow(vertex.y - pos.y, 2) + pow(vertex.z - pos.z, 2), 0.5);
         if (distance > max)
         {
             max = distance;
-           
+
         }
         if (distance < min)
         {
@@ -165,31 +167,38 @@ void loadbitmap(Model *model) {
 
     //cam->SetCollaider(min);
     //cam->SetFar(max);
-    
-    for (int i=0; i<model->nfaces(); i++) {
+    float maxValue = 0;
+
+    for (int i = 0; i < model->nfaces(); i++) {
         std::vector<int> face = model->face(i);
         sf::Vector3f screen_coords[3];
         sf::Vector3i world_coords[3];
         sf::Vector3f firstPoint;
         sf::Vector3f secondPoint;
-        for (int j=0; j<3; j++) {
-            
+        sf::Vector3f Lambert[3];
+        for (int j = 0; j < 3; j++) {
             sf::Vector3f v0 = sf::Vector3f(model->vert(face[j]).x, model->vert(face[j]).y, model->vert(face[j]).z);
-            sf::Vector3f v1 = sf::Vector3f(model->vert(face[(j+1)%3]).x, model->vert(face[(j + 1) % 3]).y, model->vert(face[(j + 1) % 3]).z);
+            sf::Vector3f v1 = sf::Vector3f(model->vert(face[(j + 1) % 3]).x, model->vert(face[(j + 1) % 3]).y, model->vert(face[(j + 1) % 3]).z);
             firstPoint = cam->Render(v0);
             secondPoint = cam->Render(v1);
-            screen_coords[j] = firstPoint;
-            line(firstPoint, secondPoint, 0xFFFFFFFF);//firstPointp.x, firstPointp.y, secondPointp.x, secondPointp.y, 0xFFFFFFFF);
-            int x1 = (v1.x+1.)*width/2.;
-            int y1 = (v1.y+1.)*height/2.;*/
-            line(firstPointp.x, firstPointp.y, secondPointp.x, secondPointp.y, 0xFFFFFFFF);
-        }
-        Thriangle(screen_coords);
-        
-           
-        
-    }
 
+            auto tmp = model->getNormals().at(face[j]);
+            Lambert[j] = Normilize(sf::Vector3f(tmp.x,tmp.y,tmp.z));
+            screen_coords[j] = firstPoint;
+            //line(firstPoint, secondPoint, 0xFFFFFFFF);//firstPointp.x, firstPointp.y, secondPointp.x, secondPointp.y, 0xFFFFFFFF);
+        }
+        sf::Vector3f fNormalz = Normilize(Cross((Lambert[1]- Lambert[0]),(Lambert[2]- Lambert[1])));
+        sf::Vector3f 
+
+
+
+        float colorPercent = cos(FindAngle(lightPos, fNormalz));
+
+        Thriangle(screen_coords, colorPercent);
+
+
+
+    }
     //ZBuffering(model, *pixarray);
     return;
 }
@@ -219,7 +228,7 @@ void displaybitmap() {
     return;
 }
 
-void ZBuffering(sf::Vector3i screen_coords[3]) 
+void ZBuffering(sf::Vector3i screen_coords[3])
 {
     if (screen_coords[0].y > screen_coords[1].y) std::swap(screen_coords[0], screen_coords[1]);
     if (screen_coords[0].y > screen_coords[2].y) std::swap(screen_coords[0], screen_coords[2]);
@@ -235,27 +244,31 @@ bool isValid(sf::Vector3f screen_coord)
     return screen_coord.x > 0 && screen_coord.x <= width && screen_coord.y > 0 && screen_coord.y < height;
 }
 
-void Thriangle(sf::Vector3f screen_coords[3])
+
+void Thriangle(sf::Vector3f screen_coords[3], float colorPercent)
 {
+
+
+
     if (!(isValid(screen_coords[0]) && isValid(screen_coords[1]) && isValid(screen_coords[2]))) return;
     if (screen_coords[0].y > screen_coords[1].y)
     {
         std::swap(screen_coords[0], screen_coords[1]);
     }
 
-    if (screen_coords[0].y > screen_coords[2].y) 
+    if (screen_coords[0].y > screen_coords[2].y)
     {
-        std::swap(screen_coords[0], screen_coords[2]); 
+        std::swap(screen_coords[0], screen_coords[2]);
     }
-    if (screen_coords[1].y > screen_coords[2].y) 
-    { 
+    if (screen_coords[1].y > screen_coords[2].y)
+    {
         std::swap(screen_coords[1], screen_coords[2]);
     }
-    
 
-    for (int i = screen_coords[0].y; i < screen_coords[1].y ; i++)
+
+    for (int i = screen_coords[0].y; i < screen_coords[1].y; i++)
     {
-       
+
         double Depth = 0, kDepth = 0;
         double t = (i - screen_coords[0].y) / (float)(screen_coords[1].y - screen_coords[0].y);
         int A = screen_coords[0].x * (1. - t) + screen_coords[1].x * t;
@@ -271,17 +284,18 @@ void Thriangle(sf::Vector3f screen_coords[3])
         Depth = DepthA;
         for (int j = A; j <= B; j++)
         {
-            if (j < 0 || i < 0 || j >= width || i >= height || PixDepth[i][j] > (Depth + (j - A) * (DepthB - DepthA)))
+            if (j < 0 || i < 0 || j >= width || i >= height || PixDepth[i][j] >(Depth + (j - A) * (DepthB - DepthA)))
             {
-                pixarray[i][j].b = 0xf0;
-                pixarray[i][j].r = 0x00;
+                /*pixarray[i][j].b = 0xff * colorPercent;*/
                 continue;
             }
-                
-            pixarray[i][j].g = 0xf0;
-            pixarray[i][j].t = 0xf0;
+
+            pixarray[i][j].g = 0xff * colorPercent;
+            pixarray[i][j].r = 0x00 * colorPercent;
+            pixarray[i][j].b = 0x00 * colorPercent;
+            pixarray[i][j].t = 0xff;
             PixDepth[i][j] = Depth + (j - A) * (DepthB - DepthA);
-            
+
 
         }
     }
@@ -302,13 +316,14 @@ void Thriangle(sf::Vector3f screen_coords[3])
         Depth = DepthA;
         for (int j = A; j <= B; j++)
         {
-            if (j < 0 || i < 0 || j >= width || i >= height || PixDepth[i][j] > (Depth + (j - A) * (DepthB - DepthA)))
+            if (j < 0 || i < 0 || j >= width || i >= height || PixDepth[i][j] >(Depth + (j - A) * (DepthB - DepthA)))
             {
-                pixarray[i][j].b = 0xf0;
-                pixarray[i][j].r = 0x00;
+               /* pixarray[i][j].b = 0xff * colorPercent;*/
                 continue;
             }
-            pixarray[i][j].g = 0xf0;
+            pixarray[i][j].g = 0xff * colorPercent;
+            pixarray[i][j].r = 0x00 * colorPercent;
+            pixarray[i][j].b = 0x00 * colorPercent;
             pixarray[i][j].t = 0xff;
             PixDepth[i][j] = Depth + (j - A) * (DepthB - DepthA);
         }
@@ -333,14 +348,14 @@ void line(sf::Vector3f firstPoint, sf::Vector3f secondPoint, Uint32 color)
     for (int x = firstPoint.x; x < secondPoint.x; x++)
     {
         double t = (x - firstPoint.x) / (float)(secondPoint.x - firstPoint.x);
-        Depth = firstPoint.z + (secondPoint.z - firstPoint.z) / (secondPoint.x - firstPoint.x)*(x-firstPoint.x);
+        Depth = firstPoint.z + (secondPoint.z - firstPoint.z) / (secondPoint.x - firstPoint.x) * (x - firstPoint.x);
         int y = firstPoint.y * (1. - t) + secondPoint.y * t;
 
-        if (y < 0 || x < 0 || x >= width || y >= height )//|| PixDepth[x][y]>Depth)
+        if (y < 0 || x < 0 || x >= width || y >= height || PixDepth[x][y]>Depth)
             continue;
 
         if (steep) {
-            
+
             pixarray[x][y].r = color >> 6;
             pixarray[x][y].g = (color >> 4) % 256;
             pixarray[x][y].b = (color >> 2) % 256;
@@ -378,7 +393,7 @@ void line(int x0, int y0, int x1, int y1, Uint32 color) {
         if (y < 0 || x < 0 || x >= width || y >= height)
             continue;
         if (steep) {
-            
+
             pixarray[x][y].r = color >> 6;
             pixarray[x][y].g = (color >> 4) % 256;
             pixarray[x][y].b = (color >> 2) % 256;
