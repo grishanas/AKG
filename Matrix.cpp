@@ -19,3 +19,11 @@ float DotProduct(sf::Vector3f a, sf::Vector3f b)
 {
 	return a.x * b.x + a.y * b.y + a.z * b.z;
 }
+
+float FindAngle(sf::Vector3f a, sf::Vector3f b)
+{
+	float temp1 = pow(pow(a.x, 2) + pow(a.y, 2) + pow(a.z, 2), 0.5);
+	float temp2 = pow(pow(b.x, 2) + pow(b.y, 2) + pow(b.z, 2), 0.5);
+	float ab = DotProduct(a, b);
+	return ab / (temp1 * temp2);
+}

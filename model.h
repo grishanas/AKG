@@ -9,13 +9,14 @@
 class Model {
 private:
 	std::vector<Vec3f> verts_;
+	std::vector<Vec3f> normalVectors_;
 	std::vector<std::vector<int> > faces_;
 	sf::Vector3f rotation_;
 	sf::Vector3f transform_;
 	sf::Vector3f scale_;
 
 public:
-	Model(const char *filename);
+	Model(const char* filename);
 	~Model();
 	int nverts();
 	int nfaces();
@@ -24,7 +25,8 @@ public:
 	void traslate(sf::Vector3f traslation);
 	Vec3f vert(int i);
 
-	std::vector<Vec3f> getVerteses() { return verts_;  }
+	std::vector<Vec3f> getVerteses() { return verts_; }
+	std::vector<Vec3f> getNormals() { return normalVectors_; }
 
 
 	std::vector<int> face(int idx);

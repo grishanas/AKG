@@ -10,11 +10,11 @@ void  Camera::ChangeAngle(sf::Vector2f angles) {
 
 	this->_angles += angles;
 
-	_angles.x = fmod(_angles.x, M_PI*2);
-    if (_angles.x < 0)
+	_angles.x = fmod(_angles.x, M_PI * 2);
+	if (_angles.x < 0)
 		_angles.x += M_PI * 2;
 	_angles.y = fmod(_angles.y, M_PI * 2);
-    if (_angles.y < 0)
+	if (_angles.y < 0)
 		_angles.y += M_PI * 2;
 
 	this->SetDecart();
@@ -31,17 +31,17 @@ void  Camera::ChangeRadius(float rad) {
 }
 
 
-void Camera::SetDecart() 
+void Camera::SetDecart()
 {
 	this->_SphereToDecart();
 	this->_ChangeCameraView();
 }
 
-Camera::Camera() 
+Camera::Camera()
 {
-	this->_radius = 10;
-	this->Parametr.height=800;
-	this->Parametr.width=800;
+	this->_radius = 40;
+	this->Parametr.height = 800;
+	this->Parametr.width = 800;
 	this->Parametr.z_near = 100;
 	this->Parametr.z_far = 0.0001f;
 	_target = sf::Vector3f(0, 0, 0);
@@ -54,7 +54,7 @@ Camera::~Camera() {
 }
 
 
-void Camera::_ChangeCameraView() 
+void Camera::_ChangeCameraView()
 {
 	sf::Vector3f temp = sf::Vector3f(.0f, 1.f, .0f);
 	this->_direction = Normilize(this->_decartCoords - this->_target);
@@ -69,9 +69,9 @@ sf::Vector3f Camera::_CameraView(sf::Vector3f point)
 	sf::Vector3f newPoint;
 
 
-	newPoint.x = point.x * this->_cameraRight.x + point.y * this->_cameraRight.y + point.z * this->_cameraRight.z- DotProduct(this->_cameraRight, this->_decartCoords);
-	newPoint.y = point.x * this->_cameraUp.x + point.y * this->_cameraUp.y + point.z * this->_cameraUp.z- DotProduct(this->_cameraUp, this->_decartCoords);
-	newPoint.z = point.x * this->_direction.x + point.y * this->_direction.y + point.z * this->_direction.z- DotProduct(this->_direction, this->_decartCoords);
+	newPoint.x = point.x * this->_cameraRight.x + point.y * this->_cameraRight.y + point.z * this->_cameraRight.z - DotProduct(this->_cameraRight, this->_decartCoords);
+	newPoint.y = point.x * this->_cameraUp.x + point.y * this->_cameraUp.y + point.z * this->_cameraUp.z - DotProduct(this->_cameraUp, this->_decartCoords);
+	newPoint.z = point.x * this->_direction.x + point.y * this->_direction.y + point.z * this->_direction.z - DotProduct(this->_direction, this->_decartCoords);
 
 	return newPoint;
 }
@@ -79,8 +79,8 @@ sf::Vector3f Camera::_CameraView(sf::Vector3f point)
 sf::Vector3f Camera::MatrixProjection(sf::Vector3f point)
 {
 	sf::Vector3f newPoint;
-	newPoint.x = point.x * 2 / this->Parametr.width ;
-	newPoint.y = point.y * 2 / this->Parametr.height ;
+	newPoint.x = point.x * 2 / this->Parametr.width;
+	newPoint.y = point.y * 2 / this->Parametr.height;
 	newPoint.z = point.z / (this->Parametr.z_near - this->Parametr.z_far) + this->Parametr.z_near / (this->Parametr.z_near - this->Parametr.z_far);
 	//newPoint.x /= -point.z;
 	//newPoint.y /= -point.z;
@@ -90,10 +90,10 @@ sf::Vector3f Camera::MatrixProjection(sf::Vector3f point)
 
 sf::Vector3f  Camera::MatrixPerspective(sf::Vector3f point)
 {
-	sf::Vector3f newPoint;	
+	sf::Vector3f newPoint;
 	newPoint.x = point.x * 2 * this->Parametr.z_near / this->Parametr.width;
 	newPoint.y = point.y * 2 * this->Parametr.z_near / this->Parametr.height;
-	newPoint.z = (point.z*this->Parametr.z_far + this->Parametr.z_near*this->Parametr.z_far ) / ( this->Parametr.z_near - this->Parametr.z_far );
+	newPoint.z = (point.z * this->Parametr.z_far + this->Parametr.z_near * this->Parametr.z_far) / (this->Parametr.z_near - this->Parametr.z_far);
 	newPoint.x /= -point.z;
 	newPoint.y /= -point.z;
 	newPoint.z /= -point.z;
@@ -117,6 +117,7 @@ sf::Vector3f Camera::Render(sf::Vector3f point)
 
 	temp = this->_CameraView(point);
 	temp = this->MatrixPerspective(temp);
+
 	temp = this->MatrixviewPort(temp);
 
 

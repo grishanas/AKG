@@ -1,9 +1,10 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-const int width = 800;
-const int height = 800;
-const int depth = 255;
+constexpr int width = 800;
+constexpr int height = 800;
+constexpr int depth = 255;
+
 
 struct pix {
     unsigned char r;
