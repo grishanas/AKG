@@ -14,7 +14,7 @@
 
 Model* model1 = NULL;
 Camera* cam = NULL;
-sf::Vector3f lightPos = { 1000.f, 1000.f, 0.f };
+sf::Vector3f lightPos = { 100.f, 0.f, 0.f };
 //Model *model2 = NULL;
 
 
@@ -188,11 +188,15 @@ void loadbitmap(Model* model) {
             //line(firstPoint, secondPoint, 0xFFFFFFFF);//firstPointp.x, firstPointp.y, secondPointp.x, secondPointp.y, 0xFFFFFFFF);
         }
         sf::Vector3f fNormalz = Normilize(Cross((Lambert[1]- Lambert[0]),(Lambert[2]- Lambert[1])));
-        sf::Vector3f 
+        sf::Vector3f tmp = (screen_coords[0] + screen_coords[1] + screen_coords[2]);
+        tmp.x /= 3;
+        tmp.y /= 3;
+        tmp.z /= 3;
+
+        auto temp1 = Normilize(tmp-lightPos);
 
 
-
-        float colorPercent = cos(FindAngle(lightPos, fNormalz));
+        float colorPercent = cos(FindAngle(temp1, fNormalz));
 
         Thriangle(screen_coords, colorPercent);
 
