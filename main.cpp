@@ -122,10 +122,7 @@ int main(int argc, char** argv) {
             }
         }
 
-     /*   memset(PixDepth, -3.21e-11 , width * height * sizeof(float));*/
-
         memset(pixarray, 0x0, width * height * sizeof(pix));
-
         loadbitmap(model1);
         //loadbitmap(model2);
         displaybitmap();
@@ -166,8 +163,8 @@ void loadbitmap(Model *model) {
         }
     }
 
-    cam->SetNear(min);
-    cam->SetFar(max);
+    //cam->SetCollaider(min);
+    //cam->SetFar(max);
     
     for (int i=0; i<model->nfaces(); i++) {
         std::vector<int> face = model->face(i);
