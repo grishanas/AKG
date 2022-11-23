@@ -23,6 +23,10 @@ public:
 	void scale(sf::Vector3f scales);
 	void traslate(sf::Vector3f traslation);
 	Vec3f vert(int i);
+
+	std::vector<Vec3f> getVerteses() { return verts_;  }
+
+
 	std::vector<int> face(int idx);
 };
 

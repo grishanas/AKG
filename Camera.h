@@ -11,7 +11,7 @@ struct CameraParametr
 {
 	int width;
 	int height;
-	int z_near, z_far;
+	double z_near, z_far;
 };
 
 class Camera 
@@ -36,11 +36,14 @@ class Camera
 		sf::Vector3f _CameraView(sf::Vector3f point);
 		
 	public:
-
+		void SetFar(double value) { Parametr.z_far = value; };
+		void SetNear(double value) { Parametr.z_near = value; };
+		double GetFar() {return  Parametr.z_far; };
+		double GetNear(){return Parametr.z_near; };
 		Camera();
 		~Camera();
 		void Render(Model *model);
-		sf::Vector3i Render(sf::Vector3f);
+		sf::Vector3f Render(sf::Vector3f);
 		void SetDecart();
 		void ChangeAngle(sf::Vector2f angles);
 		void ChangeRadius(float rad);
@@ -48,6 +51,8 @@ class Camera
 		sf::Vector3f MatrixPerspective(sf::Vector3f point);
 		sf::Vector3f MatrixviewPort(sf::Vector3f point);
 
+
+		sf::Vector3f getDecartPos() { return _decartCoords; }
 
 
 

@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="model.cpp" />
     <ClCompile Include="lab_part_2.cpp" />
   </ItemGroup>
@@ -29,6 +30,7 @@
     <ClInclude Include="geometry.h" />
     <ClInclude Include="Lab_part_2.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="Matrix.h" />
     <ClInclude Include="model.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

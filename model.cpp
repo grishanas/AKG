@@ -29,6 +29,10 @@ Model::Model(const char *filename) : verts_(), faces_() {
             }
             faces_.push_back(f);
         }
+        else if (!line.compare(0, 2, "vn "))
+        {
+
+        }
     }
 }
 

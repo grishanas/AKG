@@ -4,10 +4,9 @@
 
 #include "model.h"
 #include "main.h"
+#include <SFML/System.hpp>
 
-
-void Restarization();
-void ZBuffering(Model* model, pix* pixarray);
+void ZBuffering(sf::Vector3f triangle[3], pix* pixarray);
 
 
 
