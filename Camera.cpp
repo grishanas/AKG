@@ -39,7 +39,7 @@ void Camera::SetDecart()
 
 Camera::Camera() 
 {
-	this->_radius = 4;
+	this->_radius = 10;
 	this->Parametr.height=800;
 	this->Parametr.width=800;
 	this->Parametr.z_near = 100;
@@ -117,7 +117,6 @@ sf::Vector3f Camera::Render(sf::Vector3f point)
 
 	temp = this->_CameraView(point);
 	temp = this->MatrixPerspective(temp);
-
 	temp = this->MatrixviewPort(temp);
 
 
