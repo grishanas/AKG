@@ -14,21 +14,22 @@
 Model *model1 = NULL;
 Camera* cam = NULL;
 //Model *model2 = NULL;
-const int width  = 800;
-const int height = 800;
-const int depth = 255;
+
 
 using namespace std;
 using namespace sf;
 
 pix pixarray[width][height];
+float PixDepth[width][height];
 Texture tex;
 std::vector<Vertex> vertes;
 
+void line(sf::Vector3f firstPont, sf::Vector3f secondPoint, Uint32 color);
 void line(int x0, int y0, int x1, int y1, Uint32 color);
 void loadbitmap(Model* model);
 void displaybitmap();
-void Thriangle(Vec3i screen_coords[3]);
+void Thriangle(sf::Vector3f screen_coords[3]);
+void ZBuffering(sf::Vector3i screen_coords[3]);
 
 int main(int argc, char** argv) {
 
@@ -41,9 +42,11 @@ int main(int argc, char** argv) {
     }
 
 
+
     RenderWindow window(VideoMode(width, height), "Renderer", sf::Style::Close);
 
-     cam = new Camera();
+    cam = new Camera();
+    model1->traslate(sf::Vector3f(0.2f, 0.2f, 0));
 
     window.setFramerateLimit(60);
 
@@ -70,19 +73,19 @@ int main(int argc, char** argv) {
                 {
                 case Keyboard::W:
                     //model1->traslate(sf::Vector3f(0, 0.01, 0));
-                    cam->ChangeAngle(sf::Vector2f(0, 0.01));
+                    cam->ChangeAngle(sf::Vector2f(0, cameraSpeed));
                     break;
                 case Keyboard::A:
                     //model1->traslate(sf::Vector3f(-0.01, 0, 0));
-                    cam->ChangeAngle(sf::Vector2f(-0.01, 0));
+                    cam->ChangeAngle(sf::Vector2f(-cameraSpeed, 0));
                     break;
                 case Keyboard::S:
                     //model1->traslate(sf::Vector3f(0, -0.01, 0));
-                    cam->ChangeAngle(sf::Vector2f(0, -0.01));
+                    cam->ChangeAngle(sf::Vector2f(0, -cameraSpeed));
                     break;
                 case Keyboard::D:
                     //model1->traslate(sf::Vector3f(0.01, 0, 0));
-                    cam->ChangeAngle(sf::Vector2f(0.01, 0));
+                    cam->ChangeAngle(sf::Vector2f(cameraSpeed, 0));
                     break;
                 default:
                     break;
@@ -111,10 +114,20 @@ int main(int argc, char** argv) {
             }
         }
 
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                PixDepth[i][j] = -1000.f;
+            }
+        }
 
+     /*   memset(PixDepth, -3.21e-11 , width * height * sizeof(float));*/
 
-        memset(pixarray, 0, width * height * sizeof(pix));
+        memset(pixarray, 0x0, width * height * sizeof(pix));
+
         loadbitmap(model1);
+        //loadbitmap(model2);
         displaybitmap();
 
         window.clear();
@@ -134,25 +147,47 @@ int main(int argc, char** argv) {
 
 void loadbitmap(Model *model) {
 
-    
+    sf::Vector3f pos = cam->getDecartPos();
+
+    float min = std::numeric_limits<float>().max();
+    float max = std::numeric_limits<float>().min();
+
+    for (auto &vertex : model->getVerteses())
+    {
+        auto distance =  pow( pow( vertex.x - pos.x ,2) + pow(vertex.y - pos.y, 2) + pow(vertex.z - pos.z, 2) , 0.5 );
+        if (distance > max)
+        {
+            max = distance;
+           
+        }
+        if (distance < min)
+        {
+            min = distance;
+        }
+    }
+
+    cam->SetNear(min);
+    cam->SetFar(max);
     
     for (int i=0; i<model->nfaces(); i++) {
         std::vector<int> face = model->face(i);
-        Vec3i screen_coords[3];
-        Vec3f world_coords[3];
+        sf::Vector3f screen_coords[3];
+        sf::Vector3i world_coords[3];
+        sf::Vector3f firstPoint;
+        sf::Vector3f secondPoint;
         for (int j=0; j<3; j++) {
             
-            Vec3f v0 = model->vert(face[j]);
-            screen_coords[j] = Vec3i(((v0.x + 1.) * width / 2.),((v0.y + 1.) * height / 2.),((v0.z+1)* depth/2));
-            world_coords[j] = v0;
-            Vec3f v1 = model->vert(face[(j+1)%3]);
-            int x0 = (v0.x+1.)*width/2.;
-            int y0 = (v0.y+1.)*height/2.;
+            sf::Vector3f v0 = sf::Vector3f(model->vert(face[j]).x, model->vert(face[j]).y, model->vert(face[j]).z);
+            sf::Vector3f v1 = sf::Vector3f(model->vert(face[(j+1)%3]).x, model->vert(face[(j + 1) % 3]).y, model->vert(face[(j + 1) % 3]).z);
+            firstPoint = cam->Render(v0);
+            secondPoint = cam->Render(v1);
+            screen_coords[j] = firstPoint;
+            line(firstPoint, secondPoint, 0xFFFFFFFF);//firstPointp.x, firstPointp.y, secondPointp.x, secondPointp.y, 0xFFFFFFFF);
             int x1 = (v1.x+1.)*width/2.;
-            int y1 = (v1.y+1.)*height/2.;
-            line(x0, y0, x1, y1, 0xFFFFFFFF);
+            int y1 = (v1.y+1.)*height/2.;*/
+            line(firstPointp.x, firstPointp.y, secondPointp.x, secondPointp.y, 0xFFFFFFFF);
         }
-        //Thriangle(screen_coords);
+        Thriangle(screen_coords);
         
            
         
@@ -187,32 +222,141 @@ void displaybitmap() {
     return;
 }
 
-void Thriangle(Vec3i screen_coords[3])
+void ZBuffering(sf::Vector3i screen_coords[3]) 
 {
     if (screen_coords[0].y > screen_coords[1].y) std::swap(screen_coords[0], screen_coords[1]);
     if (screen_coords[0].y > screen_coords[2].y) std::swap(screen_coords[0], screen_coords[2]);
     if (screen_coords[1].y > screen_coords[2].y) std::swap(screen_coords[1], screen_coords[2]);
-    int TotalHeight = screen_coords[2].y - screen_coords[0].y;
-    for (int i = screen_coords[0].y; i < screen_coords[2].y; i++)
+    for (int i = screen_coords[0].y; i < screen_coords[1].y; i++)
     {
-        bool secondHalf = i > screen_coords[1].y - screen_coords[0].y || screen_coords[1].y == screen_coords[0].y;
-        int SegmentHeight = secondHalf ? screen_coords[2].y - screen_coords[1].y : screen_coords[1].y == screen_coords[0].y;
-        float alp = (float)i / TotalHeight;
-        float bet = (float)(i - (secondHalf ? screen_coords[1].y - screen_coords[0].y : 0));
-        Vec3i A = screen_coords[0] + (screen_coords[2] - screen_coords[0])*alp;
-        Vec3i B = secondHalf ? screen_coords[1] + (screen_coords[2] - screen_coords[1])*(bet) : screen_coords[0] + (screen_coords[1] - screen_coords[0])*bet;
-        if (A.x > B.x)
+
+    }
+}
+
+bool isValid(sf::Vector3f screen_coord)
+{
+    return screen_coord.x > 0 && screen_coord.x <= width && screen_coord.y > 0 && screen_coord.y < height;
+}
+
+void Thriangle(sf::Vector3f screen_coords[3])
+{
+    if (!(isValid(screen_coords[0]) && isValid(screen_coords[1]) && isValid(screen_coords[2]))) return;
+    if (screen_coords[0].y > screen_coords[1].y)
+    {
+        std::swap(screen_coords[0], screen_coords[1]);
+    }
+
+    if (screen_coords[0].y > screen_coords[2].y) 
+    {
+        std::swap(screen_coords[0], screen_coords[2]); 
+    }
+    if (screen_coords[1].y > screen_coords[2].y) 
+    { 
+        std::swap(screen_coords[1], screen_coords[2]);
+    }
+    
+
+    for (int i = screen_coords[0].y; i < screen_coords[1].y ; i++)
+    {
+       
+        double Depth = 0, kDepth = 0;
+        double t = (i - screen_coords[0].y) / (float)(screen_coords[1].y - screen_coords[0].y);
+        int A = screen_coords[0].x * (1. - t) + screen_coords[1].x * t;
+        double DepthA = screen_coords[0].z + (screen_coords[2].z - screen_coords[0].z) / (screen_coords[2].y - screen_coords[0].y) * (i - screen_coords[0].y);
+
+
+        t = (i - screen_coords[0].y) / (float)(screen_coords[2].y - screen_coords[0].y);
+        int B = screen_coords[0].x * (1. - t) + screen_coords[2].x * t;
+        double DepthB = screen_coords[0].z + (screen_coords[1].z - screen_coords[0].z) / (screen_coords[1].y - screen_coords[0].y) * (i - screen_coords[0].y);
+        if (A > B)
             swap(A, B);
 
-        for (int j = A.x; j < B.x; j++)
+        Depth = DepthA;
+        for (int j = A; j <= B; j++)
         {
-            if (j < 0 || i<0 || j >= width || i>= height)
+            if (j < 0 || i < 0 || j >= width || i >= height || PixDepth[i][j] > (Depth + (j - A) * (DepthB - DepthA)))
+            {
+                pixarray[i][j].b = 0xf0;
+                pixarray[i][j].r = 0x00;
                 continue;
-            pixarray[j][i].g = 0xff;
-            pixarray[j][i].t = 0xff;
+            }
+                
+            pixarray[i][j].g = 0xf0;
+            pixarray[i][j].t = 0xf0;
+            PixDepth[i][j] = Depth + (j - A) * (DepthB - DepthA);
+            
+
         }
+    }
 
 
+    for (int i = screen_coords[1].y; i < screen_coords[2].y; i++)
+    {
+        double Depth = 0, kDepth = 0;
+        double t = (i - screen_coords[1].y) / (float)(screen_coords[2].y - screen_coords[1].y);
+        int A = screen_coords[1].x * (1. - t) + screen_coords[2].x * t;
+        double DepthA = screen_coords[0].z + (screen_coords[2].z - screen_coords[0].z) / (screen_coords[2].y - screen_coords[0].y) * (i - screen_coords[0].y);
+
+        t = (i - screen_coords[0].y) / (float)(screen_coords[2].y - screen_coords[0].y);
+        int B = screen_coords[0].x * (1. - t) + screen_coords[2].x * t;
+        double DepthB = screen_coords[1].z + (screen_coords[2].z - screen_coords[1].z) / (screen_coords[2].y - screen_coords[1].y) * (i - screen_coords[1].y);
+        if (A > B)
+            swap(A, B);
+        Depth = DepthA;
+        for (int j = A; j <= B; j++)
+        {
+            if (j < 0 || i < 0 || j >= width || i >= height || PixDepth[i][j] > (Depth + (j - A) * (DepthB - DepthA)))
+            {
+                pixarray[i][j].b = 0xf0;
+                pixarray[i][j].r = 0x00;
+                continue;
+            }
+            pixarray[i][j].g = 0xf0;
+            pixarray[i][j].t = 0xff;
+            PixDepth[i][j] = Depth + (j - A) * (DepthB - DepthA);
+        }
+    }
+
+}
+
+void line(sf::Vector3f firstPoint, sf::Vector3f secondPoint, Uint32 color)
+{
+    if (!(isValid(firstPoint) && isValid(secondPoint))) return;
+    bool steep = false;
+    double Depth = 0, kDepth = 0;
+
+    if (std::abs(firstPoint.x - secondPoint.x) < std::abs(firstPoint.y - secondPoint.y)) {
+        std::swap(secondPoint.x, secondPoint.y);
+        std::swap(firstPoint.x, firstPoint.y);
+        steep = true;
+    }
+    if (firstPoint.x > secondPoint.x) {
+        std::swap(firstPoint, secondPoint);
+    }
+    for (int x = firstPoint.x; x < secondPoint.x; x++)
+    {
+        double t = (x - firstPoint.x) / (float)(secondPoint.x - firstPoint.x);
+        Depth = firstPoint.z + (secondPoint.z - firstPoint.z) / (secondPoint.x - firstPoint.x)*(x-firstPoint.x);
+        int y = firstPoint.y * (1. - t) + secondPoint.y * t;
+
+        if (y < 0 || x < 0 || x >= width || y >= height )//|| PixDepth[x][y]>Depth)
+            continue;
+
+        if (steep) {
+            
+            pixarray[x][y].r = color >> 6;
+            pixarray[x][y].g = (color >> 4) % 256;
+            pixarray[x][y].b = (color >> 2) % 256;
+            pixarray[x][y].t = color % 256;
+            PixDepth[x][y] = Depth;
+        }
+        else {
+            pixarray[y][x].r = color >> 6;
+            pixarray[y][x].g = (color >> 4) % 256;
+            pixarray[y][x].b = (color >> 2) % 256;
+            pixarray[y][x].t = color % 256;
+            PixDepth[y][x] = Depth;
+        }
     }
 
 }
