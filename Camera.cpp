@@ -116,6 +116,7 @@ sf::Vector3f Camera::Render(sf::Vector3f point)
 
 	temp = this->_CameraView(point);
 	temp = this->MatrixPerspective(temp);
+	//temp = this->MatrixProjection(temp);
 	temp = this->MatrixviewPort(temp);
 
 

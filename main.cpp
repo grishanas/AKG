@@ -16,7 +16,7 @@
 
 Model* model1 = NULL;
 Camera* cam = NULL;
-sf::Vector3f lightPos = { 100.f, 0.f, 0.f };
+sf::Vector3f lightPos = { 1000.f, 0.f, 200.f };
 //Model *model2 = NULL;
 
 
@@ -196,39 +196,42 @@ void loadbitmap(Model* model) {
         sf::Vector3f secondPoint;
         sf::Vector3f Lambert[3];
         for (int j = 0; j < 3; j++) {
-            sf::Vector3f v0 = sf::Vector3f(model->vert(face[j]).x, model->vert(face[j]).y, model->vert(face[j]).z);
+            sf::Vector3f v0 = sf::Vector3f((model->vert(face[j]).x+ 1.f)* width/2, (model->vert(face[j]).y+1.f)*height/2, model->vert(face[j]).z);
             sf::Vector3f v1 = sf::Vector3f(model->vert(face[(j + 1) % 3]).x, model->vert(face[(j + 1) % 3]).y, model->vert(face[(j + 1) % 3]).z);
-            firstPoint = cam->Render(v0);
-            secondPoint = cam->Render(v1);
+            //firstPoint = cam->Render(v0);
+            //secondPoint = cam->Render(v1);
             world_coords[j] = v0;
             //world_coords[j].z = firstPoint.z;
 
-            auto tmp = model->getNormals().at(face[j]);
-            Lambert[j] = Normilize(sf::Vector3f(tmp.x,tmp.y,tmp.z));
-            screen_coords[j] = firstPoint;
+            //auto tmp = model->getNormals().at(face[j]);
+            //Lambert[j] = Normilize(sf::Vector3f(tmp.x,tmp.y,tmp.z));
+            //screen_coords[j] = firstPoint;
             //line(firstPoint, secondPoint, 0xFFFFFFFF);//firstPointp.x, firstPointp.y, secondPointp.x, secondPointp.y, 0xFFFFFFFF);
         }
-        sf::Vector3f fNormalz = Normilize(Cross((world_coords[1] - world_coords[0]),(world_coords[2]- world_coords[1])));
-        sf::Vector3f tmp = (Lambert[0] + Lambert[1] + Lambert[2]);
-        tmp.x /= 3;
-        tmp.y /= 3;
-        tmp.z /= 3;
-        auto temp1 = Normilize(lightPos-tmp);
-        auto angle = FindAngle(temp1, fNormalz);
-        if (angle < min_a)
-            min_a = angle;
-        if (angle > max_a)
-            max_a = angle;
+        sf::Vector3f vectorDirection = Normilize(Cross((world_coords[2] - world_coords[0]),(world_coords[1]- world_coords[0])));
+        sf::Vector3f vectorBase = (world_coords[0] + world_coords[1] + world_coords[2]);
+        vectorBase.x /= 3;
+        vectorBase.y /= 3;
+        vectorBase.z /= 3;
+        auto lightVectorDirection = -Normilize(lightPos-vectorBase);
+        auto angle = DotProduct(vectorDirection, lightVectorDirection);
 
-        float colorPercent = DotProduct(fNormalz, temp1);
+        //if (angle < min_a)
+        //    min_a = angle;
+        //if (angle > max_a)
+        //    max_a = angle;
+
+        ////float colorPercent = DotProduct(fNormalz, temp1);
         //float colorPercent=0;
         //if (angle > 0)
-        //   colorPercent = cos(angle * M_PI);
+        //    colorPercent = angle;
         //else
         //   colorPercent = 0;
+
+        //float angle = 1;
         //colorPercent = cos(angle* M_PI);
         //colorPercent = rand()/10000;
-        ZBuffering(screen_coords, colorPercent);
+        ZBuffering(world_coords, angle);
         //Thriangle(screen_coords, colorPercent);
 
 
@@ -268,7 +271,7 @@ bool isValid(sf::Vector3f screen_coord)
     return screen_coord.x > 0 && screen_coord.x <= width && screen_coord.y > 0 && screen_coord.y < height;
 }
 
-float minimalz = 0;
+float minimalz = 1000;
 
 
 void ZBuffering(sf::Vector3f screen_coords[3], float colorPercent)
@@ -279,27 +282,40 @@ void ZBuffering(sf::Vector3f screen_coords[3], float colorPercent)
     if (screen_coords[1].y > screen_coords[2].y) std::swap(screen_coords[1], screen_coords[2]);
     for (int i = 0; i < screen_coords[2].y- screen_coords[0].y; i++)
     {
+
         bool second_half = i > screen_coords[1].y - screen_coords[0].y || screen_coords[1].y == screen_coords[0].y;
         int segment_height = second_half ? screen_coords[2].y - screen_coords[1].y : screen_coords[1].y - screen_coords[0].y;
         float alpha = (float)i / (screen_coords[2].y - screen_coords[0].y);
         float beta = (float)(i - (second_half ? screen_coords[1].y - screen_coords[0].y : 0)) / segment_height;
-        sf::Vector3f A= (screen_coords[0]) + sf::Vector3f((screen_coords[2] - screen_coords[0]) * alpha);
-        sf::Vector3f B = second_half ? sf::Vector3f(screen_coords[1]) + sf::Vector3f((screen_coords[2] - screen_coords[1]) * beta) : (screen_coords[0]) + sf::Vector3f((screen_coords[1] - screen_coords[0]) * beta);
+        if ((screen_coords[0] + sf::Vector3f((screen_coords[2] - screen_coords[0]) * alpha)).x == -INFINITY)
+            return;
+        sf::Vector3f A{ screen_coords[0] + sf::Vector3f((screen_coords[2] - screen_coords[0]) * alpha) };
+        sf::Vector3f B{ second_half ? sf::Vector3f(screen_coords[1]) + sf::Vector3f((screen_coords[2] - screen_coords[1]) * beta) : (screen_coords[0]) + sf::Vector3f((screen_coords[1] - screen_coords[0]) * beta) };
+        
+        if (A.x == -INFINITY)
+            return;
         if (A.x > B.x) std::swap(A, B);
+
+        if (A.x == -INFINITY)
+            return;
+        if (B.x == INFINITY)
+            return;
         for (int j = A.x; j <= B.x; j++) {
             float phi = B.x == A.x ? 1. : (float)(j - A.x) / (float)(B.x - A.x);
             sf::Vector3f P = A + sf::Vector3f((sf::Vector3f(B - A)) * phi);
+
             if (minimalz > P.z)
                 minimalz = P.z;
             if (P.z > 0)
                 upperZero += 1;
             else
                 belowZero += 1;
+            if (!isValid(P))return;
                     
             if (PixDepth[(int)P.y][(int)P.x] < P.z) 
             {
                 PixDepth[(int)P.y][(int)P.x] = P.z;
-                pixarray[(int)P.y][(int)P.x].b = 0xff-0xff* colorPercent;
+                pixarray[(int)P.y][(int)P.x].b = 0xff* colorPercent;
                 pixarray[(int)P.y][(int)P.x].t = 0xff;
             }
         }
@@ -439,7 +455,6 @@ void line(sf::Vector3f firstPoint, sf::Vector3f secondPoint, Uint32 color)
             pixarray[x][y].g = (color >> 4) % 256;
             pixarray[x][y].b = (color >> 2) % 256;
             pixarray[x][y].t = color % 256;
-            PixDepth[x][y] = Depth;
         }
         else {
             if (PixDepth[y][x] > Depth)
@@ -448,7 +463,6 @@ void line(sf::Vector3f firstPoint, sf::Vector3f secondPoint, Uint32 color)
             pixarray[y][x].g = (color >> 4) % 256;
             pixarray[y][x].b = (color >> 2) % 256;
             pixarray[y][x].t = color % 256;
-            PixDepth[y][x] = Depth;
         }
     }
 
