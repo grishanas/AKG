@@ -39,11 +39,11 @@ void Camera::SetDecart()
 
 Camera::Camera()
 {
-	this->_radius = 40;
+	this->_radius = 2;
 	this->Parametr.height = 800;
 	this->Parametr.width = 800;
-	this->Parametr.z_near = 100;
-	this->Parametr.z_far = 0.0001f;
+	this->Parametr.z_near = 1.f;
+	this->Parametr.z_far = 100.f;
 	_target = sf::Vector3f(0, 0, 0);
 	_collider = 0;
 	this->SetDecart();
@@ -103,7 +103,6 @@ sf::Vector3f  Camera::MatrixPerspective(sf::Vector3f point)
 sf::Vector3f Camera::MatrixviewPort(sf::Vector3f point)
 {
 	sf::Vector3f newPoint;
-
 	newPoint.x = point.x * (this->Parametr.width / 2);
 	newPoint.y = -point.y * (this->Parametr.height / 2);
 	newPoint.z = point.z;
@@ -117,7 +116,6 @@ sf::Vector3f Camera::Render(sf::Vector3f point)
 
 	temp = this->_CameraView(point);
 	temp = this->MatrixPerspective(temp);
-
 	temp = this->MatrixviewPort(temp);
 
 
