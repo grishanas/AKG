@@ -17,11 +17,13 @@ struct CameraParametr
 class Camera 
 {
 	private:
+		CameraParametr Parametr;
 		sf::Vector3f _decartCoords;
 		/*sf::Vector3f _Rotation;
 		sf::Vector3f _Target;*/
 		float _collider;
 
+		sf::Vector3f _target;
 		sf::Vector2f _angles;
 		float _radius;
 
@@ -31,8 +33,8 @@ class Camera
 
 
 		void _ChangeCameraView();
-
 		void _SphereToDecart();
+		sf::Vector3f _CameraView(sf::Vector3f point);
 		
 	public:
 		void SetFar(double value) { };//Parametr.z_far = value+200.f; };
@@ -45,6 +47,9 @@ class Camera
 		void SetDecart();
 		void ChangeAngle(sf::Vector2f angles);
 		void ChangeRadius(float rad);
+		sf::Vector3f MatrixProjection(sf::Vector3f point);
+		sf::Vector3f MatrixPerspective(sf::Vector3f point);
+		sf::Vector3f MatrixviewPort(sf::Vector3f point);
 
 
 		sf::Vector3f getDecartPos() { return _decartCoords; }

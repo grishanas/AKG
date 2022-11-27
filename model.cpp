@@ -70,8 +70,8 @@ void Model::rotate(sf::Vector3f angles) {
         vert.z = tmp * -sin(angles.x) + vert.z * cos(angles.x);
 
         tmp = vert.x;
-        vert.x = vert.x * cos(angles.y) + vert.z * -sin(angles.y);
-        vert.z = tmp * sin(angles.y) + vert.z * cos(angles.y);
+        vert.x = vert.x * cos(angles.y) + vert.z * sin(angles.y);
+        vert.z = tmp * -sin(angles.y) + vert.z * cos(angles.y);
 
         tmp = vert.x;
         vert.x = vert.x * cos(angles.z) + vert.y * sin(angles.z);
