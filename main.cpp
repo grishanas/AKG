@@ -13,10 +13,11 @@
 #include "Lab_part_2.h"
 #include "Matrix.h"
 
+#include <list>
 
 Model* model1 = NULL;
 Camera* cam = NULL;
-sf::Vector3f lightPos = { 1000.f, 0.f, 200.f };
+sf::Vector3f lightPos = { 0.f, 0.f, -35.f };
 //Model *model2 = NULL;
 
 
@@ -25,7 +26,9 @@ using namespace sf;
 
 pix pixarray[width][height];
 float PixDepth[width][height];
+float PixCount[width][height];
 Texture tex;
+float lastValue = 0;
 std::vector<Vertex> vertes;
 
 void line(sf::Vector3f firstPont, sf::Vector3f secondPoint, Uint32 color);
@@ -136,9 +139,11 @@ int main(int argc, char** argv) {
             for (int j = 0; j < height; j++)
             {
                 PixDepth[i][j] = -10000.f;
+                PixCount[i][j] = 0;
             }
         }
 
+        lastValue = 0;
         memset(pixarray, 0x0, width * height * sizeof(pix));
         loadbitmap(model1);
         //loadbitmap(model2);
@@ -196,16 +201,18 @@ void loadbitmap(Model* model) {
         sf::Vector3f secondPoint;
         sf::Vector3f Lambert[3];
         for (int j = 0; j < 3; j++) {
-            sf::Vector3f v0 = sf::Vector3f((model->vert(face[j]).x+ 1.f)* width/2, (model->vert(face[j]).y+1.f)*height/2, model->vert(face[j]).z);
+            //sf::Vector3f v0 = sf::Vector3f((model->vert(face[j]).x+ 1.f)* width/2, (model->vert(face[j]).y+1.f)*height/2, model->vert(face[j]).z);
+            sf::Vector3f v0 = sf::Vector3f(model->vert(face[j]).x, model->vert(face[j]).y, model->vert(face[j]).z);
             sf::Vector3f v1 = sf::Vector3f(model->vert(face[(j + 1) % 3]).x, model->vert(face[(j + 1) % 3]).y, model->vert(face[(j + 1) % 3]).z);
-            //firstPoint = cam->Render(v0);
-            //secondPoint = cam->Render(v1);
+            firstPoint = cam->Render(v0);
+            secondPoint = cam->Render(v1);
             world_coords[j] = v0;
-            //world_coords[j].z = firstPoint.z;
 
+            //world_coords[j].z = firstPoint.z;
             //auto tmp = model->getNormals().at(face[j]);
             //Lambert[j] = Normilize(sf::Vector3f(tmp.x,tmp.y,tmp.z));
-            //screen_coords[j] = firstPoint;
+
+            screen_coords[j] = firstPoint;
             //line(firstPoint, secondPoint, 0xFFFFFFFF);//firstPointp.x, firstPointp.y, secondPointp.x, secondPointp.y, 0xFFFFFFFF);
         }
         sf::Vector3f vectorDirection = Normilize(Cross((world_coords[2] - world_coords[0]),(world_coords[1]- world_coords[0])));
@@ -216,22 +223,22 @@ void loadbitmap(Model* model) {
         auto lightVectorDirection = -Normilize(lightPos-vectorBase);
         auto angle = DotProduct(vectorDirection, lightVectorDirection);
 
-        //if (angle < min_a)
-        //    min_a = angle;
-        //if (angle > max_a)
-        //    max_a = angle;
+        if (angle < min_a)
+            min_a = angle;
+        if (angle > max_a)
+            max_a = angle;
+
+
 
         ////float colorPercent = DotProduct(fNormalz, temp1);
         //float colorPercent=0;
-        //if (angle > 0)
-        //    colorPercent = angle;
-        //else
-        //   colorPercent = 0;
+        if (angle > 0)
+            angle = 1;
 
         //float angle = 1;
         //colorPercent = cos(angle* M_PI);
         //colorPercent = rand()/10000;
-        ZBuffering(world_coords, angle);
+        ZBuffering(screen_coords, angle);
         //Thriangle(screen_coords, colorPercent);
 
 
@@ -304,6 +311,8 @@ void ZBuffering(sf::Vector3f screen_coords[3], float colorPercent)
             float phi = B.x == A.x ? 1. : (float)(j - A.x) / (float)(B.x - A.x);
             sf::Vector3f P = A + sf::Vector3f((sf::Vector3f(B - A)) * phi);
 
+            if(P.y==400&&P.x==400 && PixDepth[(int)P.y][(int)P.x] > P.z)
+                lastValue = P.z;
             if (minimalz > P.z)
                 minimalz = P.z;
             if (P.z > 0)
@@ -315,8 +324,9 @@ void ZBuffering(sf::Vector3f screen_coords[3], float colorPercent)
             if (PixDepth[(int)P.y][(int)P.x] < P.z) 
             {
                 PixDepth[(int)P.y][(int)P.x] = P.z;
-                pixarray[(int)P.y][(int)P.x].b = 0xff* colorPercent;
-                pixarray[(int)P.y][(int)P.x].t = 0xff;
+                pixarray[(int)P.y][(int)P.x].b = 0xff;
+                pixarray[(int)P.y][(int)P.x].t = 0xff- 0xff*colorPercent;
+                PixCount[(int)P.y][(int)P.x] += 1;
             }
         }
     }
@@ -455,6 +465,7 @@ void line(sf::Vector3f firstPoint, sf::Vector3f secondPoint, Uint32 color)
             pixarray[x][y].g = (color >> 4) % 256;
             pixarray[x][y].b = (color >> 2) % 256;
             pixarray[x][y].t = color % 256;
+            PixDepth[x][y] = 100;
         }
         else {
             if (PixDepth[y][x] > Depth)
@@ -463,6 +474,7 @@ void line(sf::Vector3f firstPoint, sf::Vector3f secondPoint, Uint32 color)
             pixarray[y][x].g = (color >> 4) % 256;
             pixarray[y][x].b = (color >> 2) % 256;
             pixarray[y][x].t = color % 256;
+            PixDepth[y][x] = 100;
         }
     }
 
