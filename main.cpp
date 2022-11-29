@@ -569,7 +569,7 @@ void PhongShading(sf::Vector3f screenCoords[3], sf::Vector3f vectorsNormals[3], 
             float phi = B.x == A.x ? 1. : (float)(j - A.x) / (float)(B.x - A.x);
             sf::Vector3f P = A + sf::Vector3f((sf::Vector3f(B - A)) * phi);
 
-            sf::Vector3f normalPixel = j==A.x? BN : Normilize(BN + Gradien * (j - A.x));
+            sf::Vector3f normalPixel = j==A.x? AN : Normilize(AN + Gradien * (j - A.x));
             
           /*  sf::Vector3f tmp = (normalizetVector[0]-normalizetVector[1])*ky;
             sf::Vector3f normalPixel = Normilize((normalizetVector[0] + (normalizetVector[0]-normalizetVector[2])*kx ) + tmp);

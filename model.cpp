@@ -23,12 +23,14 @@ Model::Model(const char* filename) : verts_(), faces_() {
         else if (!line.compare(0, 2, "f ")) {
             std::vector<int> f;
             std::vector<int>Vn;
-            int itrash, idx,vn;
+            std::vector<int>Vt;
+            int itrash, idx,vn,vt;
             iss >> trash;
 
-            while (iss >> idx >> trash >> vn >> trash >> itrash) {
+            while (iss >> idx >> trash >> vt >> trash >> vn) {
                 idx--;
                 vn--;
+                vt--;
                 Vn.push_back(vn);
                 f.push_back(idx);
             }
