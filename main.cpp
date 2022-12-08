@@ -533,7 +533,7 @@ void PhongShading(sf::Vector3f screenCoords[3], sf::Vector3f vectorsNormals[3], 
     }
 
 
-    float b = 0xff * 0.2f;
+    float b = 0xff * .1f;
 
     sf::Vector3f normalizetVector[3];
     normalizetVector[0] = Normilize(sf::Vector3f(vectorsNormals[0].x, vectorsNormals[0].y, vectorsNormals[0].z));
@@ -558,7 +558,7 @@ void PhongShading(sf::Vector3f screenCoords[3], sf::Vector3f vectorsNormals[3], 
         };
 
 
-        sf::Vector3f Gradien = B.x == A.x ? BN : (BN - AN) / ((B.x - A.x) + 1);
+        sf::Vector3f Gradien = B.x == A.x ? BN : (BN - AN) / ((B.x - A.x));
 
         for (int j = A.x; j <= B.x; j++)
         {
@@ -575,28 +575,25 @@ void PhongShading(sf::Vector3f screenCoords[3], sf::Vector3f vectorsNormals[3], 
 
             /*if (!isValid(P))return;*/
 
-            sf::Vector3f lightVector = P - lightPosition;
+            sf::Vector3f lightVector = P-lightPosition;
             lightVector = Normilize(lightVector);
             float angle = DotProduct(normalPixel, lightVector);
             if (angle < 0)
                 angle = 0;
-
-
-            float id = 0xff * angle * 0.7f;
-
-
-            sf::Vector3f R = lightVector - normalPixel * DotProduct(lightVector, normalPixel) * 4.f;
-
+            float id = 0xff * angle * 0.8f;
+            sf::Vector3f R = lightVector - normalPixel * DotProduct(lightVector, normalPixel) * 2.f;
             sf::Vector3f V = Normilize(cam->getDecartPos() - P);
+            float ls = (0.3f * pow(DotProduct(R, V),1.f) * 0xff);
 
-
-            float ls = 0.2f * pow(DotProduct(R, V), 1.f) * 0.2f;;
-
+            //if (ls == -NAN)
+            //    ls = 0;
+            //float id = 0;
+            //float ls = 0;
             if (PixDepth[(int)P.y][(int)P.x] <= P.z)
             {
+                float tm = (ls + id + b) < 0 ? 0 : (ls + id + b);
                 PixDepth[(int)P.y][(int)P.x] = P.z;
-                //pixarray[(int)P.y][(int)P.x].b = 0xff * angle;
-                pixarray[(int)P.y][(int)P.x].b = (ls+ id+b)>0xff ? 0xff: (ls + id + b);
+                pixarray[(int)P.y][(int)P.x].b = tm>0xff ? 0xff: (tm);
                 pixarray[(int)P.y][(int)P.x].t = 0xff;
             }
         }
