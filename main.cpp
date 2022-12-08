@@ -17,7 +17,7 @@
 
 Model* model1 = NULL;
 Camera* cam = NULL;
-sf::Vector3f lightPos = { 0.f, -2000.f, 0.f };
+sf::Vector3f lightPos = { 0.f, 0.f, -35.f };
 //Model *model2 = NULL;
 
 
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     }
     else {
         //model1 = new Model("obj/model.obj");
-        model1 = new Model("obj/nigga.obj");
+        model1 = new Model("obj/model1.obj");
     }
 
 
@@ -192,7 +192,7 @@ void loadbitmap(Model* model) {
     //cam->SetCollaider(min);
     //cam->SetFar(max);
     float maxValue = 0;
-    float min_a=100000, max_a=0;
+    float min_a = 100000, max_a = 0;
 
     for (int i = 0; i < model->nfaces(); i++) {
         std::vector<int> face = model->face(i);
@@ -211,8 +211,8 @@ void loadbitmap(Model* model) {
             world_coords[j] = v0;
 
             //world_coords[j].z = firstPoint.z;
-            auto tmp = model->getNormals().at(face[j+3]);
-            Normile[j] = Normilize(sf::Vector3f(tmp.x,tmp.y,tmp.z));
+            auto tmp = model->getNormals().at(face[j + 3]);
+            Normile[j] = Normilize(sf::Vector3f(tmp.x, tmp.y, tmp.z));
 
             screen_coords[j] = firstPoint;
             //line(firstPoint, secondPoint, 0xFFFFFFFF);//firstPointp.x, firstPointp.y, secondPointp.x, secondPointp.y, 0xFFFFFFFF);
@@ -243,11 +243,11 @@ void loadbitmap(Model* model) {
         //ZBuffering(screen_coords, angle);
         PhongShading(screen_coords, Normile, 0xffffffff, lightPos);
         //Thriangle(screen_coords, colorPercent);
-        
+
 
 
     }
-   
+
     return;
 }
 
@@ -290,7 +290,7 @@ void ZBuffering(sf::Vector3f screen_coords[3], float colorPercent)
     if (screen_coords[0].y > screen_coords[1].y) std::swap(screen_coords[0], screen_coords[1]);
     if (screen_coords[0].y > screen_coords[2].y) std::swap(screen_coords[0], screen_coords[2]);
     if (screen_coords[1].y > screen_coords[2].y) std::swap(screen_coords[1], screen_coords[2]);
-    for (int i = 0; i < screen_coords[2].y- screen_coords[0].y; i++)
+    for (int i = 0; i < screen_coords[2].y - screen_coords[0].y; i++)
     {
 
         bool second_half = i > screen_coords[1].y - screen_coords[0].y || screen_coords[1].y == screen_coords[0].y;
@@ -301,20 +301,15 @@ void ZBuffering(sf::Vector3f screen_coords[3], float colorPercent)
             return;
         sf::Vector3f A{ screen_coords[0] + sf::Vector3f((screen_coords[2] - screen_coords[0]) * alpha) };
         sf::Vector3f B{ second_half ? sf::Vector3f(screen_coords[1]) + sf::Vector3f((screen_coords[2] - screen_coords[1]) * beta) : (screen_coords[0]) + sf::Vector3f((screen_coords[1] - screen_coords[0]) * beta) };
-        
-        if (A.x == -INFINITY)
-            return;
+
         if (A.x > B.x) std::swap(A, B);
 
-        if (A.x == -INFINITY)
-            return;
-        if (B.x == INFINITY)
-            return;
+
         for (int j = A.x; j <= B.x; j++) {
             float phi = B.x == A.x ? 1. : (float)(j - A.x) / (float)(B.x - A.x);
             sf::Vector3f P = A + sf::Vector3f((sf::Vector3f(B - A)) * phi);
 
-            if(P.y==400&&P.x==400 && PixDepth[(int)P.y][(int)P.x] > P.z)
+            if (P.y == 400 && P.x == 400 && PixDepth[(int)P.y][(int)P.x] > P.z)
                 lastValue = P.z;
             if (minimalz > P.z)
                 minimalz = P.z;
@@ -323,11 +318,11 @@ void ZBuffering(sf::Vector3f screen_coords[3], float colorPercent)
             else
                 belowZero += 1;
             if (!isValid(P))return;
-                    
-            if (PixDepth[(int)P.y][(int)P.x] < P.z) 
+
+            if (PixDepth[(int)P.y][(int)P.x] < P.z)
             {
                 PixDepth[(int)P.y][(int)P.x] = P.z;
-                pixarray[(int)P.y][(int)P.x].b = 0xff *(1- colorPercent);
+                pixarray[(int)P.y][(int)P.x].b = 0xff * (1 - colorPercent);
                 pixarray[(int)P.y][(int)P.x].t = 0xff;//- 0xff*colorPercent;
                 PixCount[(int)P.y][(int)P.x] += 1;
             }
@@ -381,9 +376,9 @@ void Thriangle(sf::Vector3f screen_coords[3], float colorPercent)
         for (int j = A; j <= B; j++)
         {
             if (dsa)
-                pixarray[i][j].b = 0xff ;
+                pixarray[i][j].b = 0xff;
 
-            if (j < 0 || i < 0 || j >= width || i >= height || PixDepth[i][j] > (Depth + (j - A) * (DepthB - DepthA)))
+            if (j < 0 || i < 0 || j >= width || i >= height || PixDepth[i][j] >(Depth + (j - A) * (DepthB - DepthA)))
             {
                 /*pixarray[i][j].b = 0xff * colorPercent;*/
                 //continue;
@@ -424,7 +419,7 @@ void Thriangle(sf::Vector3f screen_coords[3], float colorPercent)
 
             if (j < 0 || i < 0 || j >= width || i >= height || PixDepth[i][j] >(Depth + (j - A) * (DepthB - DepthA)))
             {
-               /* pixarray[i][j].b = 0xff * colorPercent;*/
+                /* pixarray[i][j].b = 0xff * colorPercent;*/
                 continue;
             }
             ////pixarray[i][j].g = 0xff * colorPercent;
@@ -519,7 +514,7 @@ void line(int x0, int y0, int x1, int y1, Uint32 color) {
 }
 
 
-void PhongShading(sf::Vector3f screenCoords[3], sf::Vector3f vectorsNormals[3], Uint32 color , sf::Vector3f lightPosition)
+void PhongShading(sf::Vector3f screenCoords[3], sf::Vector3f vectorsNormals[3], Uint32 color, sf::Vector3f lightPosition)
 {
     if (screenCoords[0].y > screenCoords[1].y)
     {
@@ -537,7 +532,9 @@ void PhongShading(sf::Vector3f screenCoords[3], sf::Vector3f vectorsNormals[3], 
         swap(vectorsNormals[1], vectorsNormals[2]);
     }
 
-    bool revers = false;
+
+    float b = 0xff * 0.2f;
+
     sf::Vector3f normalizetVector[3];
     normalizetVector[0] = Normilize(sf::Vector3f(vectorsNormals[0].x, vectorsNormals[0].y, vectorsNormals[0].z));
     normalizetVector[1] = Normilize(sf::Vector3f(vectorsNormals[1].x, vectorsNormals[1].y, vectorsNormals[1].z));
@@ -551,41 +548,55 @@ void PhongShading(sf::Vector3f screenCoords[3], sf::Vector3f vectorsNormals[3], 
         float beta = (float)(i - (second_half ? screenCoords[1].y - screenCoords[0].y : 0)) / segment_height;
         sf::Vector3f A{ screenCoords[0] + sf::Vector3f((screenCoords[2] - screenCoords[0]) * alpha) };
         sf::Vector3f B{ second_half ? sf::Vector3f(screenCoords[1]) + sf::Vector3f((screenCoords[2] - screenCoords[1]) * beta) : (screenCoords[0]) + sf::Vector3f((screenCoords[1] - screenCoords[0]) * beta) };
-        
+
         sf::Vector3f AN = Normilize(normalizetVector[0] + (normalizetVector[2] - normalizetVector[0]) * alpha);
         sf::Vector3f BN = second_half ? (normalizetVector[1]) + ((normalizetVector[2] - normalizetVector[1]) * beta) : (normalizetVector[0]) + (normalizetVector[1] - normalizetVector[0]) * beta;
         BN = Normilize(BN);
-        if (A.x > B.x) { 
+        if (A.x > B.x) {
             std::swap(A, B);
             swap(AN, BN);
         };
-        
 
-        sf::Vector3f Gradien = B.x == A.x ? BN :(BN - AN) / ((B.x-A.x)+1);
 
-        for (int j = A.x; j <= B.x; j++) 
+        sf::Vector3f Gradien = B.x == A.x ? BN : (BN - AN) / ((B.x - A.x) + 1);
+
+        for (int j = A.x; j <= B.x; j++)
         {
 
             float phi = B.x == A.x ? 1. : (float)(j - A.x) / (float)(B.x - A.x);
             sf::Vector3f P = A + sf::Vector3f((sf::Vector3f(B - A)) * phi);
+            sf::Vector3f normalPixel = j == A.x ? AN : Normilize(AN + Gradien * (j - A.x));
 
-            sf::Vector3f normalPixel = j==A.x? AN : Normilize(AN + Gradien * (j - A.x));
-            
-          /*  sf::Vector3f tmp = (normalizetVector[0]-normalizetVector[1])*ky;
-            sf::Vector3f normalPixel = Normilize((normalizetVector[0] + (normalizetVector[0]-normalizetVector[2])*kx ) + tmp);
-          */  
-            
-            if (!isValid(P))return;
+
+
+            /*  sf::Vector3f tmp = (normalizetVector[0]-normalizetVector[1])*ky;
+              sf::Vector3f normalPixel = Normilize((normalizetVector[0] + (normalizetVector[0]-normalizetVector[2])*kx ) + tmp);
+            */
+
+            /*if (!isValid(P))return;*/
+
             sf::Vector3f lightVector = P - lightPosition;
             lightVector = Normilize(lightVector);
             float angle = DotProduct(normalPixel, lightVector);
             if (angle < 0)
                 angle = 0;
 
+
+            float id = 0xff * angle * 0.7f;
+
+
+            sf::Vector3f R = lightVector - normalPixel * DotProduct(lightVector, normalPixel) * 4.f;
+
+            sf::Vector3f V = Normilize(cam->getDecartPos() - P);
+
+
+            float ls = 0.2f * pow(DotProduct(R, V), 1.f) * 0.2f;;
+
             if (PixDepth[(int)P.y][(int)P.x] <= P.z)
             {
                 PixDepth[(int)P.y][(int)P.x] = P.z;
-                pixarray[(int)P.y][(int)P.x].b = 0xff * angle;
+                //pixarray[(int)P.y][(int)P.x].b = 0xff * angle;
+                pixarray[(int)P.y][(int)P.x].b = (ls+ id+b)>0xff ? 0xff: (ls + id + b);
                 pixarray[(int)P.y][(int)P.x].t = 0xff;
             }
         }
