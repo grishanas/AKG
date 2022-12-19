@@ -93,6 +93,27 @@ void Model::rotate(sf::Vector3f angles) {
             i++;
         }
     }
+
+    for (auto& vert : normalVectors_)
+    {
+        float tmp = vert.y;
+        vert.y = vert.y * cos(angles.x) + vert.z * sin(angles.x);
+        vert.z = tmp * -sin(angles.x) + vert.z * cos(angles.x);
+
+        tmp = vert.x;
+        vert.x = vert.x * cos(angles.y) + vert.z * sin(angles.y);
+        vert.z = tmp * -sin(angles.y) + vert.z * cos(angles.y);
+
+        tmp = vert.x;
+        vert.x = vert.x * cos(angles.z) + vert.y * sin(angles.z);
+        vert.y = tmp * -sin(angles.z) + vert.y * cos(angles.z);
+
+        if (vert.x < -1 || vert.y < -1 || vert.z < -1)
+        {
+            int i = 0;
+            i++;
+        }
+    }
 }
 
 
